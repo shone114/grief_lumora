@@ -10,7 +10,7 @@ function App() {
     <>
       <EnterScreen onEnter={() => setHasEntered(true)} />
 
-      <SkyCanvas>
+      <SkyCanvas hasEntered={hasEntered}>
         {/* Phase 2: Clouds will go here */}
       </SkyCanvas>
 

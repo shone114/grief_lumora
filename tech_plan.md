@@ -113,13 +113,27 @@ Add parallax by listening to mouse movement and applying slight transform: trans
 
 **Note on Sunny Mode**: Implemented using CSS `conic-gradient` for rotating god rays and `mix-blend-screen` for realistic light blending. Transitions use individual layer opacity to prevent stacking context artifacts.
 
-☁️ B. Memory Clouds (with memory content inside)
+### ☁️ B. Memory Clouds (2-Layer System)
 
-This is a 3-layer structure:
+Implemented using a dual-layer approach in `cloudGenerator.js` and `SkyCanvas.jsx`:
 
-1. Cloud Base Layer
+1.  **Baseline Layer (Background)**
+    *   **Purpose**: Ambient depth.
+    *   **Specs**: Scale 0.8x-1.4x, Opacity 0.4-0.7, Z-Index 10-20.
+    *   **Count**: Maintained at 5-8 clouds.
+    *   **Interaction**: `pointer-events-none`.
 
-Cloud sprite PNGs stored in /assets/clouds
+2.  **Interactive Layer (Foreground/Hero)**
+    *   **Purpose**: Memory containers.
+    *   **Specs**: Scale 1.5x-2.2x, Opacity 0.9-1.0, Z-Index 50.
+    *   **Count**: Strict limit of 2-3 clouds.
+    *   **Interaction**: `cursor-pointer`.
+    *   **Spawning**: Controlled by a **Smart Anti-Stacking** system that enforces a minimum 15-second gap between spawns to prevent overlap.
+
+**Rendering**:
+-   **Asset**: PNG based (`cloud_1.png`) for organic look.
+-   **Animation**: `Framer Motion` for smooth LTR drifting.
+-   **Optimization**: Clouds outside viewport are automatically removed (garbage collection via React state updates).
 
 Randomized:
 

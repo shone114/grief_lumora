@@ -8,6 +8,15 @@ There are no buttons, no menus, no lists — only interactions that mimic natura
 
 This document explains the idea, interactions, screens, and emotional goals in simple terms.
 
+### Cloud Mechanics
+Each cloud is a unique entity with two distinct types:
+
+1.  **Baseline Atmosphere**: Soft, semi-transparent clouds that drift in the background to provide depth and movement. They are non-interactive and create a peaceful backdrop.
+2.  **Foreground Dreams (Interactive)**: Large, solid clouds that float closer to the viewer. These are the "Heroes" of the sky—rare, majestic, and clickable. These are the vessels for your memories.
+
+-   **Drift**: Clouds drift slowly from left to right.
+-   **Density**: The sky is never crowded. A "Smart Spawning" system ensures that the large interactive clouds always have plenty of space (at least 15 seconds apart), so they never overlap or clutter the view.
+
 🌤️ 1. Overall Experience
 
 When the user enters the app, they see an infinite drifting sky filled with floating, soft clouds.

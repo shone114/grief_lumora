@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useWeather } from '../state/useWeather';
+import { generateCloud } from '../utils/cloudGenerator';
+import Cloud from './Cloud';
 
 const THEMES = {
     sunny: {
@@ -20,9 +22,68 @@ const THEMES = {
     }
 };
 
-const SkyCanvas = ({ children }) => {
+const SkyCanvas = ({ children, hasEntered }) => {
     const { weather } = useWeather();
     const activeTheme = THEMES[weather] || THEMES.sunny;
+    const [clouds, setClouds] = useState([]);
+    const lastInteractiveSpawn = React.useRef(0);
+
+    // Cloud Spawning Logic (2-Layer System)
+    useEffect(() => {
+        if (!hasEntered) return; // Wait for entry
+
+        // Initial Populate
+        if (clouds.length === 0) {
+            const baseline = Array.from({ length: 5 }).map(() => generateCloud(weather, 'baseline', true));
+
+            // Manual Stagger for Interactive Clouds to prevent initial stacking
+            // We generate 3 interactive clouds with explicit offsets (delays)
+            const interactive = [
+                generateCloud(weather, 'interactive', false), // Start off-screen
+                generateCloud(weather, 'interactive', false),
+                generateCloud(weather, 'interactive', false)
+            ];
+            // Override delays to force spread: 0% (Just entering), 40% (Mid), 80% (End)
+            // Note: duration is random (~45s), so we estimate
+            interactive[0].delay = 0;
+            interactive[1].delay = -15; // ~15s into animation
+            interactive[2].delay = -35; // ~35s into animation
+
+            setClouds([...baseline, ...interactive]);
+            lastInteractiveSpawn.current = Date.now();
+        }
+
+        const interval = setInterval(() => {
+            const now = Date.now();
+            setClouds(currentClouds => {
+                const baseline = currentClouds.filter(c => c.type === 'baseline');
+                const interactive = currentClouds.filter(c => c.type === 'interactive');
+
+                let newClouds = [...currentClouds];
+
+                // Maintain Baseline (Atmosphere) - 5-8 clouds
+                if (baseline.length < 5) {
+                    newClouds.push(generateCloud(weather, 'baseline', false));
+                } else if (baseline.length < 8 && Math.random() > 0.6) {
+                    newClouds.push(generateCloud(weather, 'baseline', false));
+                }
+
+                // Maintain Interactive (Hero) - STRICT Anti-Stacking
+                // 1. Must be below max count (3)
+                // 2. Must be at least 15s since last spawn (huge gap)
+                const timeSinceLast = now - lastInteractiveSpawn.current;
+
+                if (interactive.length < 3 && timeSinceLast > 15000) {
+                    newClouds.push(generateCloud(weather, 'interactive', false));
+                    lastInteractiveSpawn.current = now; // Update timestamp
+                }
+
+                return newClouds;
+            });
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [weather, hasEntered]); // Dependency Added!
 
     return (
         <motion.div
@@ -33,7 +94,6 @@ const SkyCanvas = ({ children }) => {
             transition={{ duration: 2, ease: "easeInOut" }}
         >
             {/* Sun & Rays (Sunny Mode Only) */}
-            {/* Removed parent opacity to prevent stacking context isolation of blend modes */}
             <div className="absolute inset-0 pointer-events-none">
 
                 {/* 1. Sun Layer Group (Core + Glow) - Normal Blend */}
@@ -43,14 +103,13 @@ const SkyCanvas = ({ children }) => {
                     animate={{ opacity: activeTheme.hasSun ? 1 : 0 }}
                     transition={{ duration: activeTheme.hasSun ? 2 : 1 }}
                 >
-                    {/* The Sun Core (Bright White/Yellow Center) */}
+                    {/* The Sun Core */}
                     <div className="absolute top-[30%] left-[30%] w-[20vw] h-[20vw] bg-yellow-100 blur-[60px] rounded-full opacity-90 z-10" />
-
-                    {/* Outer Glow (Deep Orange to prevent Green) */}
+                    {/* Outer Glow */}
                     <div className="absolute top-[10%] left-[10%] w-[60vw] h-[60vw] bg-orange-500/30 blur-[120px] rounded-full z-0" />
                 </motion.div>
 
-                {/* 2. God Rays (Screen Blend) - Animate Opacity Directly */}
+                {/* 2. God Rays (Screen Blend) */}
                 <motion.div
                     className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] flex items-center justify-center mix-blend-screen"
                     initial={{ opacity: 0 }}
@@ -67,7 +126,7 @@ const SkyCanvas = ({ children }) => {
                     />
                 </motion.div>
 
-                {/* 3. Lens Flares (Screen Blend) - Animate Opacity Directly */}
+                {/* 3. Lens Flares (Screen Blend) */}
                 <motion.div
                     className="absolute top-0 left-0 w-full h-full overflow-hidden mix-blend-screen"
                     initial={{ opacity: 0 }}
@@ -90,6 +149,9 @@ const SkyCanvas = ({ children }) => {
 
             {/* Parallax / Cloud Container */}
             <div className="absolute inset-0">
+                {clouds.map(cloud => (
+                    <Cloud key={cloud.id} cloud={cloud} />
+                ))}
                 {children}
             </div>
         </motion.div>
