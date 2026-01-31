@@ -53,7 +53,7 @@ The user can change the mood of the entire sky using a simple slider with three 
 
 Sunny
 
-Warm, hopeful, golden tones.
+Vibrant blue sky with golden sun rays and warm lens flares.
 
 Cloudy
 

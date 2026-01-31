@@ -111,6 +111,8 @@ Add optional noise/mist overlay using a semi-transparent PNG positioned absolute
 
 Add parallax by listening to mouse movement and applying slight transform: translate() to background layers.
 
+**Note on Sunny Mode**: Implemented using CSS `conic-gradient` for rotating god rays and `mix-blend-screen` for realistic light blending. Transitions use individual layer opacity to prevent stacking context artifacts.
+
 ☁️ B. Memory Clouds (with memory content inside)
 
 This is a 3-layer structure:
